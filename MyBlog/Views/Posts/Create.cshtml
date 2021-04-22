@@ -4,14 +4,12 @@
     ViewData["Title"] = "Create";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+<h4>Create Post</h4>
 
-<h1>Create</h1>
-
-<h4>Post</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Create">
+        <form asp-action="Create" enctype="multipart/form-data">
             <!-- Validation Report -->
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
@@ -53,7 +51,8 @@
             <!-- Image -->
             <div class="form-group">
                 <label asp-for="ImagePath" class="control-label"></label>
-                <input asp-for="ImagePath" type="file" class="form-control" />
+                <input asp-for="ImagePath" type="file" 
+                       name="uploadFile" class="form-control" />
                 <span asp-validation-for="ImagePath" class="text-danger"></span>
             </div>
 
