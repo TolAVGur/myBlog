@@ -1,5 +1,7 @@
 ﻿@model MyBlog.ViewModels.PostsViewModel
 
+@addTagHelper *, MyBlog
+
 @{
     ViewData["Title"] = "Posts";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -11,55 +13,29 @@
     <p><a asp-action="Create">Create New Post</a></p>
 }
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Title</th>
-            <th>Description</th>
-            <th>Content</th>
-            <th>Publish Date</th>
-            <th>Publish Time</th>
-            <th>Image Path</th>
-            <th>Control</th>
+<!-- Pagination Controls -->
+<page-link page-model="Model.Paginator" page-action="Index"></page-link>
 
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model.Posts)
-        {
-            <tr>
-                <td>@Html.DisplayFor(modelItem => item.Title)</td>
-                <td>@Html.DisplayFor(modelItem => item.Description)</td>
-                <td>@Html.DisplayFor(modelItem => item.Content)</td>
-                <td>@Html.DisplayFor(modelItem => item.PublishDate)</td>
-                <td>@Html.DisplayFor(modelItem => item.PublishTime)</td>
-                <td>@Html.DisplayFor(modelItem => item.ImagePath)</td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+@foreach (var item in Model.Posts)
+{
+    <div class="card">
+        <div class="card-header">
+            @Html.DisplayFor(modelItem => item.PublishDate)
+            @Html.DisplayFor(modelItem => item.PublishTime)
+        </div>
+        <div class="card-body">
+            <img src="@Html.DisplayFor(modelItem => item.ImagePath)" alt="..." class="post" />
+            <h5 class="card-title"> @Html.DisplayFor(modelItem => item.Title)</h5>
+            <p class="card-text">@Html.DisplayFor(modelItem => item.Description)</p>
+            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-primary">Details</a>
+        </div>
+        <div class="card-footer text-muted">
+            <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+            <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+        </div>
+
+    </div>
+}
 
 <!-- Pagination Controls -->
-@if (Model.Paginator.HasPreviousPage)
-{
-    <a asp-action="Index"
-       asp-route-pageNumber="@(Model.Paginator.PageNumber - 1)"
-       class="btn btn-primary">
-        <i class="glyficon glyficon-chevron-left"></i>
-        Prevous Page
-    </a>
-}
-@if (Model.Paginator.HasNextPage)
-{
-    <a asp-action="Index"
-       asp-route-pageNumber="@(Model.Paginator.PageNumber + 1)"
-       class="btn btn-primary">
-        <i class="glyficon glyficon-chevron-right"></i>
-        Next Page
-    </a>
-}
+<page-link page-model="Model.Paginator" page-action="Index"></page-link>
