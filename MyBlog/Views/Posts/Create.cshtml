@@ -51,9 +51,15 @@
             <!-- Image -->
             <div class="form-group">
                 <label asp-for="ImagePath" class="control-label"></label>
-                <input asp-for="ImagePath" type="file" 
+                <input asp-for="ImagePath" type="file"
                        name="uploadFile" class="form-control" />
                 <span asp-validation-for="ImagePath" class="text-danger"></span>
+            </div>
+
+            <!-- Categories -->
+            <div class="form-group">
+                <label asp-for="CategoryId" class="control-label"></label>
+                <select asp-for="CategoryId" asp-items="ViewBag.CategoryId" class="form-control"></select>
             </div>
 
             <!-- Submit -->

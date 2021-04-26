@@ -1,4 +1,5 @@
-﻿using MyBlog.Models;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using MyBlog.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,5 +11,6 @@ namespace MyBlog.ViewModels
     {
         public List<Post> Posts { get; set; }
         public PageViewModel Paginator { get; set; }
+        public SelectList Categories { get; set; }
     }
 }
