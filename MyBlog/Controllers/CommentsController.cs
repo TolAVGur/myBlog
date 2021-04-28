@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -20,23 +22,21 @@ namespace MyBlog.Controllers
         }
 
         // GET: Comments
-        public async Task<IActionResult> Index(int? postId)
+        public async Task<IActionResult> Index(int? id)
         {
-            if(postId != null)
+            if (id != null)
             {
-                var post = await _context.Posts.Where(p => p.Id == postId)
-                    .FirstOrDefaultAsync();
+                var post = await _context.Posts.Where(p => p.Id == id).FirstOrDefaultAsync();
                 ViewBag.Post = post;
 
                 var comments = await _context.Comments
                     .Include(c => c.ApplicationUser)
                     .Include(c => c.Post)
-                    .Where(c => c.PostId == postId)
+                    .Where(c => c.PostId == id)
                     .ToListAsync();
 
                 return View(comments);
             }
-
 
             var applicationDbContext = _context.Comments.Include(c => c.Post);
             return View(await applicationDbContext.ToListAsync());
@@ -62,9 +62,10 @@ namespace MyBlog.Controllers
         }
 
         // GET: Comments/Create
-        public IActionResult Create()
+        public IActionResult Create(int? postId)
         {
-            ViewData["PostId"] = new SelectList(_context.Posts, "Id", "Content");
+            var post = _context.Posts.Where(p => p.Id == postId).FirstOrDefault();
+            ViewBag.Post = post;
             return View();
         }
 
@@ -73,15 +74,16 @@ namespace MyBlog.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Content,PublishDate,PublishTime,ApplicationUserId,PostId")] Comment comment)
+        public async Task<IActionResult> Create([Bind("Id,Content,PublishDate,PublishTime,PostId,ApplicationUserId")] Comment comment)
         {
             if (ModelState.IsValid)
             {
+                var user = await _context.Users.Where(u => u.UserName == User.Identity.Name).FirstOrDefaultAsync();
+                comment.ApplicationUserId = user.Id;
                 _context.Add(comment);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Index), new { id = comment.PostId });
             }
-            ViewData["PostId"] = new SelectList(_context.Posts, "Id", "Content", comment.PostId);
             return View(comment);
         }
 

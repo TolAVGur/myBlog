@@ -28,23 +28,22 @@
 {
     <div class="card card_margin">
         <div class="card-header">
-            @Html.DisplayFor(modelItem => item.PublishDate)
-            @Html.DisplayFor(modelItem => item.PublishTime)
+            <h5 class="card-title">@Html.DisplayFor(modelItem => item.Title)</h5>       
         </div>
         <div class="card-body">
             <img src="@Html.DisplayFor(modelItem => item.ImagePath)" alt="..." class="post" />
-            <h5 class="card-title"> @Html.DisplayFor(modelItem => item.Title)</h5>
+            @Html.DisplayFor(modelItem => item.PublishDate)
+            @Html.DisplayFor(modelItem => item.PublishTime)
             <h6 class="card-title">Категория: @Html.DisplayFor(modelItem => item.Category.Name)</h6>
             <p class="card-text">@Html.DisplayFor(modelItem => item.Description)</p>
             <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-info">Details</a>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <a asp-action="Index" asp-controller="Comments" asp-route-id="@item.Id" class="btn btn-outline-info">Comments</a>
         </div>
 
         <div class="card-footer text-muted">
-            <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-            <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            &nbsp;&nbsp;&nbsp;&nbsp;
-            <a asp-action="Index" asp-controller="Comments" asp-route-id="@item.Id" class="btn btn-outline-info">Comments</a>
-
+            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-info">Edit</a>
+            <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-outline-info">Delete</a>
         </div>
     </div>
 }

@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using MyBlog.Data;
 using MyBlog.Models;
 using MyBlog.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MyBlog.Controllers
 {
@@ -81,6 +82,7 @@ namespace MyBlog.Controllers
         }
 
         // GET: Posts/Create
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             var categories = _context.Categories.ToList();
