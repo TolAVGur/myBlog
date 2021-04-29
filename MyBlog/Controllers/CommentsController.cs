@@ -103,7 +103,7 @@ namespace MyBlog.Controllers
                 return View(comment);
             }
 
-            return Redirect("Identity/Account/AccessDenied"); 
+            return Redirect("/Identity/Account/AccessDenied"); 
 
         }
 
