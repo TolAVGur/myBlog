@@ -97,9 +97,10 @@ namespace MyBlog.Controllers
             var comment = await _context.Comments.FindAsync(id);
             if (comment == null)
                 return NotFound();
-
+            //*
             if (comment.ApplicationUserName == User.Identity.Name)
             {
+                ViewBag.PostId = comment.PostId;
                 return View(comment);
             }
 
@@ -110,12 +111,10 @@ namespace MyBlog.Controllers
         // POST: Comments/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Content,PublishDate,PublishTime,ApplicationUserId,PostId")] Comment comment)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Content,PublishDate,PublishTime,ApplicationUserId,PostId,ApplicationUserName")] Comment comment)
         {
             if (id != comment.Id)
-            {
                 return NotFound();
-            }
 
             if (ModelState.IsValid)
             {
@@ -135,29 +134,29 @@ namespace MyBlog.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Index), new { id = comment.PostId });
             }
             ViewData["PostId"] = new SelectList(_context.Posts, "Id", "Content", comment.PostId);
             return View(comment);
         }
 
         // GET: Comments/Delete/5
+        [Authorize]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var comment = await _context.Comments
                 .Include(c => c.Post)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (comment == null)
-            {
                 return NotFound();
-            }
 
-            return View(comment);
+            if (comment.ApplicationUserName == User.Identity.Name)
+                return View(comment);
+            else
+                return Redirect("/Identity/Account/AccessDenied");
         }
 
         // POST: Comments/Delete/5
