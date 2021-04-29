@@ -30,6 +30,10 @@ namespace MyBlog.Models
         public string ApplicationUserId { get; set; }
         public virtual ApplicationUser ApplicationUser { get; set; }
 
+        [Required]
+        [MaxLength(100)]
+        public string ApplicationUserName { get; set; }
+
         public int PostId { get; set; }
         public virtual Post Post { get; set; }
     }

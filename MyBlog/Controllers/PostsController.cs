@@ -82,7 +82,7 @@ namespace MyBlog.Controllers
         }
 
         // GET: Posts/Create
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "SuperAdmin")]
         public IActionResult Create()
         {
             var categories = _context.Categories.ToList();
@@ -134,6 +134,7 @@ namespace MyBlog.Controllers
         }
 
         // GET: Posts/Edit/5
+        [Authorize(Roles = "SuperAdmin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -185,6 +186,7 @@ namespace MyBlog.Controllers
         }
 
         // GET: Posts/Delete/5
+        [Authorize(Roles = "SuperAdmin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)

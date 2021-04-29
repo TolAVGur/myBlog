@@ -5,11 +5,13 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Comments</h1>
-<h5>Post: @ViewBag.Post.Title</h5>
+<h5>Comments for post: @ViewBag.Post.Title</h5>
 
 <p>
-    <a asp-action="Create" asp-route-postId="@ViewBag.Post.Id">Create New</a>
+    @if (User.Identity.IsAuthenticated)
+     {
+        <a asp-action="Create" asp-route-postId="@ViewBag.Post.Id">Create New</a>
+     } 
 </p>
 
 <table class="table">
@@ -25,7 +27,7 @@
                 @Html.DisplayNameFor(model => model.PublishTime)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.ApplicationUserId)
+                @Html.DisplayNameFor(model => model.ApplicationUserName)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Post)
@@ -47,15 +49,20 @@
                     @Html.DisplayFor(modelItem => item.PublishTime)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.ApplicationUserId)
+                    @Html.DisplayFor(modelItem => item.ApplicationUserName)
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Post.Content)
                 </td>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+                    @if (User.Identity.Name == item.ApplicationUserName || User.IsInRole("SuperAdmin"))
+                    {
+                        <span> | </span>
+                        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a><span> | </span>
+                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    }
+
                 </td>
             </tr>
         }
