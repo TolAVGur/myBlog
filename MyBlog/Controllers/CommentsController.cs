@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MyBlog.Data;
@@ -62,6 +63,7 @@ namespace MyBlog.Controllers
         }
 
         // GET: Comments/Create
+        [Authorize]
         public IActionResult Create(int? postId)
         {
             var post = _context.Posts.Where(p => p.Id == postId).FirstOrDefault();
@@ -70,11 +72,9 @@ namespace MyBlog.Controllers
         }
 
         // POST: Comments/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Content,PublishDate,PublishTime,PostId,ApplicationUserId")] Comment comment)
+        public async Task<IActionResult> Create([Bind("Id,Content,PublishDate,PublishTime,ApplicationUserId,PostId,ApplicationUserName")] Comment comment)
         {
             if (ModelState.IsValid)
             {
@@ -88,25 +88,26 @@ namespace MyBlog.Controllers
         }
 
         // GET: Comments/Edit/5
+        [Authorize]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var comment = await _context.Comments.FindAsync(id);
             if (comment == null)
-            {
                 return NotFound();
+
+            if (comment.ApplicationUserName == User.Identity.Name)
+            {
+                return View(comment);
             }
-            ViewData["PostId"] = new SelectList(_context.Posts, "Id", "Content", comment.PostId);
-            return View(comment);
+
+            return Redirect("Identity/Account/AccessDenied"); 
+
         }
 
         // POST: Comments/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Content,PublishDate,PublishTime,ApplicationUserId,PostId")] Comment comment)
@@ -167,7 +168,7 @@ namespace MyBlog.Controllers
             var comment = await _context.Comments.FindAsync(id);
             _context.Comments.Remove(comment);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Index), new { id = comment.PostId });
         }
 
         private bool CommentExists(int id)
