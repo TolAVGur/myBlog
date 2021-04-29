@@ -14,6 +14,8 @@
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
+            <input asp-for="PostId" type="hidden" value="@ViewBag.PostId" />
+            <input asp-for="ApplicationUserName" type="hidden" value="@User.Identity.Name" />
             <div class="form-group">
                 <label asp-for="Content" class="control-label"></label>
                 <input asp-for="Content" class="form-control" />
