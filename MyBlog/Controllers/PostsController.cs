@@ -41,13 +41,13 @@ namespace MyBlog.Controllers
 
             // 2 - Разбивка коллекции постов на страницы пагинации:
             int pageSize = 3; 
-            int count = posts.Count();
+            int count = posts.Count;
             var items = posts
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize).ToList();
 
             // 3 - Формирование коллекции категорий для создания фильтра:
-            List<Category> categories = _context.Categories.ToList();
+            List<Category> categories = await _context.Categories.ToListAsync();
             categories.Insert(0, new Category() { Id = 0, Name = "Все категории" });
 
             // 4 - Создание менеджера пагинации:
@@ -175,8 +175,7 @@ namespace MyBlog.Controllers
                                 {
                                     await uploadFile.CopyToAsync(fs);
                                 }
-                                //*
-                                //System.IO.File.Delete(oldServerPath);
+                                System.IO.File.Delete(oldServerPath);
                             }
                             
                             post.ImagePath = path;
@@ -220,7 +219,6 @@ namespace MyBlog.Controllers
             {
                 return NotFound();
             }
-
             return View(post);
         }
 
@@ -230,6 +228,16 @@ namespace MyBlog.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var post = await _context.Posts.FindAsync(id);
+            // *
+            string imagePath = post.ImagePath;
+            var simularImagePath = _context.Posts.Where(p => p.ImagePath == imagePath).ToList();
+            int N = simularImagePath.Count;
+            if(N == 1)
+            {
+                string serverPath = _env.WebRootPath + imagePath;
+                System.IO.File.Delete(serverPath);
+            }
+            // ->
             _context.Posts.Remove(post);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
