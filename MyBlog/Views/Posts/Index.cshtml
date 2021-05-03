@@ -7,7 +7,7 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>My Personal Blog</h2>
+<h3>My Personal Blog</h3>
 @if (User.IsInRole("SuperAdmin"))
 {
     <p><a asp-action="Create">Create New Post</a></p>
@@ -20,7 +20,6 @@
         <select name="categoryId" asp-items="Model.Categories" class="form-control"></select>
         &nbsp;&nbsp;&nbsp;
         <input type="submit" value="Выбрать" class="btn btn-info" />
-
     </div>
 </form>
 
@@ -44,8 +43,9 @@
         <div class="card-footer text-muted">
             @if (User.IsInRole("SuperAdmin"))
             {
-                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-info">Edit</a>
-                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-outline-info">Delete</a>
+                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a>
+                <span>|</span>
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
             }
         </div>
     </div>

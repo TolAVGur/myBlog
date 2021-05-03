@@ -41,13 +41,13 @@ namespace MyBlog.Controllers
 
             // 2 - Разбивка коллекции постов на страницы пагинации:
             int pageSize = 3; 
-            int count = posts.Count();
+            int count = posts.Count;
             var items = posts
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize).ToList();
 
             // 3 - Формирование коллекции категорий для создания фильтра:
-            List<Category> categories = _context.Categories.ToList();
+            List<Category> categories = await _context.Categories.ToListAsync();
             categories.Insert(0, new Category() { Id = 0, Name = "Все категории" });
 
             // 4 - Создание менеджера пагинации:
@@ -67,16 +67,12 @@ namespace MyBlog.Controllers
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var post = await _context.Posts
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (post == null)
-            {
                 return NotFound();
-            }
 
             return View(post);
         }
@@ -91,8 +87,6 @@ namespace MyBlog.Controllers
         }
 
         // POST: Posts/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Title,Description,Content,PublishDate,PublishTime,ImagePath,CategoryId")] Post post,
@@ -138,49 +132,74 @@ namespace MyBlog.Controllers
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var post = await _context.Posts.FindAsync(id);
             if (post == null)
-            {
                 return NotFound();
-            }
+
+            var categories = _context.Categories.ToList();
+            ViewData["CategoryId"] = new SelectList(categories, "Id", "Name");
             return View(post);
         }
 
         // POST: Posts/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,Content,PublishDate,PublishTime,ImagePath")] Post post)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,Content,PublishDate,PublishTime,ImagePath,CategoryId")] Post post,
+            IFormFile uploadFile)
         {
             if (id != post.Id)
-            {
                 return NotFound();
-            }
 
             if (ModelState.IsValid)
             {
-                try
+                if (uploadFile != null)
                 {
-                    _context.Update(post);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!PostExists(post.Id))
+                    string name = uploadFile.FileName;
+                    var ext = Path.GetExtension(name);
+                    if (permittedExtensions.Contains(ext)) 
                     {
-                        return NotFound();
+                        try  
+                        {
+                            //*
+                            string path = $"/files/{name}";
+                            string oldImagePath = _context.Posts.Where(p => p.Id == id)
+                                .AsNoTracking() // блокировка кеш памяти чтоб не конфликтовали 2 сущьности id 
+                                .FirstOrDefault().ImagePath;
+                            string oldServerPath = _env.WebRootPath + oldImagePath;
+                            if (path != oldImagePath)
+                            {
+                                string serverPath = _env.WebRootPath + path;
+                                using (FileStream fs = new FileStream(serverPath, FileMode.Create, FileAccess.Write))
+                                {
+                                    await uploadFile.CopyToAsync(fs);
+                                }
+                                System.IO.File.Delete(oldServerPath);
+                            }
+                            
+                            post.ImagePath = path;
+                            _context.Update(post);
+                            await _context.SaveChangesAsync();
+                        }
+                        catch (DbUpdateConcurrencyException)
+                        {
+                            if (!PostExists(post.Id))
+                            {
+                                return NotFound();
+                            }
+                            else
+                            {
+                                throw;
+                            }
+                        }
+                        return RedirectToAction(nameof(Index), new { categoryId = post.CategoryId });
                     }
                     else
-                    {
-                        throw;
-                    }
+                        return RedirectToAction("ExtansionError", "Errors");
                 }
-                return RedirectToAction(nameof(Index));
+                else
+                    return RedirectToAction("UploadError", "Errors");
             }
             return View(post);
         }
@@ -200,7 +219,6 @@ namespace MyBlog.Controllers
             {
                 return NotFound();
             }
-
             return View(post);
         }
 
@@ -210,6 +228,16 @@ namespace MyBlog.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var post = await _context.Posts.FindAsync(id);
+            // *
+            string imagePath = post.ImagePath;
+            var simularImagePath = _context.Posts.Where(p => p.ImagePath == imagePath).ToList();
+            int N = simularImagePath.Count;
+            if(N == 1)
+            {
+                string serverPath = _env.WebRootPath + imagePath;
+                System.IO.File.Delete(serverPath);
+            }
+            // ->
             _context.Posts.Remove(post);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
